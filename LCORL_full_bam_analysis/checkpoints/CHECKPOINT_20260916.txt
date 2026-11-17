@@ -1,0 +1,31 @@
+LCORL functional-haplotype checkpoint
+Date: 2026-09-16
+Assembly: ARS-UCD1.2
+Final phased cohort: 165 individuals / 330 chromosome copies
+
+Completed:
+- Common CDS variant annotation
+- 6 missense and 4 synonymous variants identified across transcripts
+- Representative transcript: ENSBTAT00000066859
+- VEP 107 and SIFT annotation
+- InterProScan protein-domain annotation
+- DUF4553: aa 1442-1897
+- Missense MAF and segment LD integration
+- Phase-aware mapping to S1, S5 and S11
+- 16 joint protein haplotypes identified
+
+Main results:
+- A762P + S913G + K1503Q triple: 237/330 copies (0.718182)
+- I562V + E1019K pair: 132/330 copies (0.400000)
+- Major five-variant haplotype:
+  I562V + A762P + S913G + E1019K + K1503Q
+  118/330 copies (0.357576)
+- Triple-only haplotype:
+  A762P + S913G + K1503Q
+  91/330 copies (0.275758)
+- Reference at all six sites:
+  62/330 copies (0.187879)
+
+Next stage:
+- Phenotype association if phenotype records are available; otherwise
+- Replication/validation using Q9827 data

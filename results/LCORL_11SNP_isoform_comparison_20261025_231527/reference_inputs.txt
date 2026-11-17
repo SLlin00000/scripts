@@ -1,0 +1,6 @@
+Reference: /scratch/user/s4922196/Q9827_reference/ARS-UCD1.2_Btau5.0.1Y.fa
+Annotation: /QRISdata/Q9774/lcorl_project/LCORL_full_bam_analysis/annotation/Bos_taurus.ARS-UCD1.2.105.chr.gff3
+Extracted region: 6:37380296-37556946
+All 11 genomic REF alleles matched.
+All CDS phase, start, terminal-stop and internal-stop checks passed.
+Each ALT was evaluated separately; no combined haplotype was assumed.

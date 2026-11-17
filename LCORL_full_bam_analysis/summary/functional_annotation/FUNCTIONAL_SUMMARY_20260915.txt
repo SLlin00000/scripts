@@ -1,0 +1,39 @@
+LCORL functional follow-up summary
+Date: 2026-09-15
+Reference assembly: ARS-UCD1.2
+Annotation: Ensembl release 105
+Samples after QC/phasing: 165
+
+COMMON VARIANT ANNOTATION
+- Common LCORL SNPs (MAF >= 0.05): 720
+- Intronic: 707
+- CDS + exon: 10
+- Exon but non-CDS: 3
+
+CODING CONSEQUENCES
+Among the 10 common CDS SNPs:
+- Missense / nonsynonymous: 6
+- Synonymous: 4
+- Observed nonsynonymous:synonymous SNP count ratio = 6:4 = 1.5
+
+MISSENSE SNPs
+37400741
+37402193
+37402511
+37402964
+37403224
+37403564
+
+MISSENSE SNP LINKAGE TO CANDIDATE HIGH-LD SEGMENTS
+37400741  -> S5   max r2 = 0.561000   moderate
+37402193  -> S1   max r2 = 0.732416   moderate
+37402511  -> S5   max r2 = 0.756110   moderate
+37402964  -> S5   max r2 = 0.726648   moderate
+37403224  -> S11  max r2 = 0.186914   weak
+37403564  -> S1   max r2 = 0.833776   strong
+
+INTERPRETATION
+- S1 itself consists of intronic SNPs, but it strongly tags the common missense SNP 37403564 (r2 ~0.834).
+- S5 shows moderate LD with several common missense SNPs.
+- S6 remains a high-diversity haplotype candidate but is not the strongest-linked segment for these six missense SNPs.
+- The 6:4 nonsynonymous:synonymous count ratio is NOT equivalent to dN/dS.

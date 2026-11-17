@@ -1,0 +1,6 @@
+source=/QRISdata/Q9774/lcorl_project/results/LCORL_11SNP_isoform_comparison_20261025_231527/reference_proteins.fasta
+isoform=LCORL-204
+transcript=ENSBTAT00000085131
+length=1871
+sequence_sha256=a8549b1219fda3ebc7fa870460df34bc180a20bfa00a713d62556c7104f56cc9
+template=/QRISdata/Q9774/lcorl_project/results/LCORL205_ColabFold155_lYhOdAPG/run_205.slurm

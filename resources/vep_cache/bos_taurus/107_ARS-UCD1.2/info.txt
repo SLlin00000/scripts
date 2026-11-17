@@ -1,0 +1,10 @@
+species	bos_taurus
+assembly	ARS-UCD1.2
+sift	b
+polyphen	
+source_sift	sift
+source_genebuild	2018-12
+source_assembly	ARS-UCD1.2
+variation_cols	chr,variation_name,failed,somatic,start,end,allele_string,strand,minor_allele,minor_allele_freq,clin_sig,phenotype_or_disease,clin_sig_allele,pubmed,var_synonyms
+source_dbSNP	150
+var_type	tabix

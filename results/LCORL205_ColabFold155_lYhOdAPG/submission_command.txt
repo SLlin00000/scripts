@@ -1,0 +1,1 @@
+sbatch --parsable --account=a_qaafi_cas --qos=gpu --partition=gpu_cuda --chdir=/scratch/user/s4922196/LCORL205_CF_sxnshl8l --output=/QRISdata/Q9774/lcorl_project/results/LCORL205_ColabFold155_lYhOdAPG/slurm-%j.out --error=/QRISdata/Q9774/lcorl_project/results/LCORL205_ColabFold155_lYhOdAPG/slurm-%j.err /scratch/user/s4922196/LCORL205_CF_sxnshl8l/run_205.slurm

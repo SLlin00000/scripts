@@ -1,0 +1,15 @@
+LABELS
+SEPARATOR TAB
+DATA
+pig	Pig (Sus scrofa)
+alpaca	Alpaca (Vicugna pacos)
+camel	Dromedary camel (Camelus dromedarius)
+dolphin	Bottlenose dolphin (Tursiops truncatus)
+sheep	Sheep (Ovis aries)
+goat	Goat (Capra hircus)
+bostaurus	Taurine cattle (Bos taurus)
+bosindicus	Indicine cattle (Bos indicus)
+hybridangus	Hybrid, Angus haplotype (Bos indicus × Bos taurus)
+hybridbrahman	Hybrid, Brahman haplotype (Bos indicus × Bos taurus)
+buffalo	Water buffalo (Bubalus bubalis)
+horse	Horse (Equus caballus)

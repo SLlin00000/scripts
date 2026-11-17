@@ -1,0 +1,32 @@
+===== 1. ROOT REPRESENTATION =====
+Biopython tree.rooted: False
+Root direct children: 2
+Root branch length: None
+
+===== 2. TOPOLOGY =====
+Unique tips: 1217
+Root degree: 2
+Rooted-representation child counts: {2: 1216}
+Non-root nonbinary internal nodes: 0
+
+===== 3. CANONICAL SPLITS =====
+Unique internal splits: 1214
+Theoretical binary unrooted: 1214
+Canonical duplicate representations: {'B1210': 2}
+All splits unique: True
+
+===== 4. SPLIT ID REPRODUCIBILITY =====
+H1 B1173-A assessed=62 carriers=54 PASS
+H2 B1141-A assessed=30 carriers=29 PASS
+H3 B1126-A assessed=26 carriers=25 PASS
+H4 B1009-A assessed=9 carriers=9 PASS
+H5 B0806-A assessed=6 carriers=5 PASS
+
+===== 5. STABLE SPLIT FINGERPRINTS =====
+H1 B1173 canonical_side_sha256_16=77e26138fb78371c
+H2 B1141 canonical_side_sha256_16=b72020d8b5514ec5
+H3 B1126 canonical_side_sha256_16=b09442c985f489c9
+H4 B1009 canonical_side_sha256_16=503ecc22e28f8234
+H5 B0806 canonical_side_sha256_16=f7b5b66cf9a03fe1
+
+STRUCTURAL AUDIT COMPLETED

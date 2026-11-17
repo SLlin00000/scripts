@@ -1,0 +1,196 @@
+LCORL full BAM analysis checkpoint
+Date: 2026-09-13
+
+PROJECT DIRECTORY
+/QRISdata/Q9774/lcorl_project/LCORL_full_bam_analysis
+
+REFERENCE
+ARS-UCD1.2
+Reference fasta:
+/scratch/user/s4922196/Q9827_reference/ARS-UCD1.2_Btau5.0.1Y.fa
+
+LCORL REGION
+Chr6: 36,377,806-38,557,145   (LCORL +/- 1 Mb region)
+LCORL gene body:
+Chr6: 37,377,806-37,556,970
+
+INPUT / COHORT
+391 BAM files
+174 biological samples after grouping by BAM header SM
+
+JOINT GENOTYPING / FILTERING
+Total variant records: 58,454
+Raw SNP records: 51,784
+PASS SNPs: 46,081
+Raw indels: 7,130
+PASS indels: 6,818
+
+HAPLOTYPE QC INPUT
+PASS biallelic SNP VCF:
+haplotype/LCORL_PASS_biallelic_snps.vcf.gz
+
+Initial:
+174 samples
+44,683 biallelic SNPs
+
+QC applied:
+sample missingness <= 0.05
+variant missingness <= 0.10
+
+After QC:
+165 samples
+43,902 SNPs
+
+QC VCF:
+haplotype/LCORL_QC_for_phasing.vcf.gz
+
+PHASING
+Software: Beagle 5.4
+Phasing completed successfully.
+
+Phased VCF:
+haplotype/LCORL_beagle_phased.vcf.gz
+
+Fixed-header phased VCF:
+haplotype/LCORL_beagle_phased_fixed.vcf.gz
+
+Phased cohort:
+165 samples
+43,902 SNPs
+
+LCORL GENE-BODY ANALYSIS
+Gene-body phased VCF:
+haplotype/LCORL_gene_phased.vcf.gz
+
+LCORL gene-body SNPs:
+2,213
+
+PAIRWISE HAPLOTYPE LD
+Software: VCFtools 0.1.16
+Method: --hap-r2
+Window: 500000 bp
+
+Output:
+haplotype/LCORL_gene_LD.hap.ld
+
+Total pairwise rows including header:
+2,447,579
+
+Valid R2 pairs:
+2,359,878
+
+Undefined R2 pairs:
+87,700
+
+LD decay summary:
+haplotype/LCORL_gene_LD_decay_10kb.tsv
+
+COMMON SNP FILTER
+MAF >= 0.05
+
+Common phased LCORL SNPs:
+720
+
+VCF:
+haplotype/LCORL_gene_phased_MAF05.vcf.gz
+
+Common-SNP LD output:
+haplotype/LCORL_gene_MAF05_LD.hap.ld
+
+HIGH-LD PAIRS
+Threshold:
+R2 >= 0.8
+
+Output:
+haplotype/LCORL_gene_MAF05_highLD_r2_08.tsv
+
+High-LD pairs:
+3,007
+(file has 3,008 lines including header)
+
+EXPLORATORY HIGH-LD CONNECTED COMPONENTS
+Sensitivity check:
+20 kb max edge distance:
+27 connected components
+2,208 high-LD pairs used
+
+50 kb max edge distance:
+26 connected components
+2,929 high-LD pairs used
+
+100 kb max edge distance:
+26 connected components
+3,007 high-LD pairs used
+
+Outputs:
+haplotype/candidate_blocks/candidate_blocks_r2_08_maxdist_20kb.tsv
+haplotype/candidate_blocks/candidate_blocks_r2_08_maxdist_50kb.tsv
+haplotype/candidate_blocks/candidate_blocks_r2_08_maxdist_100kb.tsv
+
+IMPORTANT:
+These are exploratory high-LD connected components,
+NOT final formal haplotype blocks.
+
+LD-DEFINED CANDIDATE SEGMENT ATTEMPT
+Rule:
+R2 >= 0.8 high-LD SNPs
+physical continuity with gap <= 20 kb
+
+Output:
+haplotype/LCORL_candidate_segments_20kb.tsv
+
+Current result:
+1 large candidate segment
+Start: 37,377,857
+End: 37,556,515
+N SNPs: 622
+Span: 178,658 bp
+
+Interpretation:
+The simple physical-gap rule is too permissive and merges most LCORL into one segment.
+Do NOT treat this as a final haplotype block.
+
+FIGURES
+Formal figures directory:
+/QRISdata/Q9774/lcorl_project/LCORL_full_bam_analysis/summary/figures/
+
+Final summary figure:
+/QRISdata/Q9774/lcorl_project/LCORL_full_bam_analysis/summary/figures/07_LCORL_final_summary.svg
+
+NEXT STEP
+Do not use the 622-SNP whole-gene segment directly for haplotype frequency.
+
+Next analysis should refine haplotype structure using:
+1. common phased SNPs (MAF >= 0.05),
+2. local LD structure,
+3. stricter / more interpretable segmentation,
+4. then extract phased alleles per stable segment,
+5. count haplotypes across 330 chromosomes (165 samples x 2),
+6. calculate haplotype frequencies,
+7. later compare groups/breeds if metadata are available.
+
+
+=== Functional annotation update 2026-09-15 ===
+Ensembl ARS-UCD1.2 release 105 annotation added.
+
+720 common LCORL SNPs:
+707 intronic
+10 CDS/exonic
+3 exon non-CDS
+
+Among 10 CDS SNPs:
+6 missense
+4 synonymous
+Observed missense:synonymous SNP count ratio = 1.5
+
+Missense-to-segment maximum LD:
+37400741 -> S5, r2=0.561000
+37402193 -> S1, r2=0.732416
+37402511 -> S5, r2=0.756110
+37402964 -> S5, r2=0.726648
+37403224 -> S11, r2=0.186914
+37403564 -> S1, r2=0.833776
+
+Key interpretation:
+S1 is intronic but strongly tags missense SNP 37403564.
+S5 shows moderate LD with multiple missense SNPs.

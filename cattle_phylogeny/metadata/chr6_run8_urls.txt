@@ -1,0 +1,2 @@
+ftp.sra.ebi.ac.uk/vol1/analysis/ERZ173/ERZ1738264/Chr6-Run8-TAUIND-public.vcf.gz
+ftp.sra.ebi.ac.uk/vol1/analysis/ERZ173/ERZ1738264/Chr6-Run8-TAUIND-public.vcf.gz.tbi

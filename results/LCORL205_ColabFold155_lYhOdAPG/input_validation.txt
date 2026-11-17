@@ -1,0 +1,7 @@
+Source: /QRISdata/Q9774/lcorl_project/results/LCORL_11SNP_isoform_comparison_20261025_231527/reference_proteins.fasta
+Transcript: ENSBTAT00000074479
+Reference: ARS-UCD1.2 / Ensembl release 105
+Protein length: 1784 aa
+Exact match to LCORL-206 residues 121-1904: PASS
+All 11 reference residues: PASS
+Sequence SHA256: bb0e9342118b9d93528efeeb6950a0af6353193ea16bb0e4023f0609aa1a3783

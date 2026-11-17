@@ -1,0 +1,18 @@
+DATASET_TEXT
+SEPARATOR TAB
+DATASET_LABEL	CDS sequence ID
+COLOR	#333333
+ALIGN_TO_TREE	1
+DATA
+pig	ENSSSCT00000089568	-1	#333333	normal	1	0
+alpaca	XM_072945825.1	-1	#333333	normal	1	0
+camel	NC_087436.1 | CDS associated with XP_031292663.1	-1	#333333	normal	1	0
+dolphin	XM_073805094.1	-1	#333333	normal	1	0
+sheep	XM_042251264.2	-1	#333333	normal	1	0
+goat	XM_018049322.1	-1	#333333	normal	1	0
+bostaurus	XM_059887736.1	-1	#333333	normal	1	0
+bosindicus	CDS associated with XP_070647300.1	-1	#333333	normal	1	0
+hybridangus	ENSBIXT00000040080	-1	#333333	normal	1	0
+hybridbrahman	ENSBIXT00005021657	-1	#333333	normal	1	0
+buffalo	XM_044946046.1	-1	#333333	normal	1	0
+horse	XM_023638297.2	-1	#333333	normal	1	0

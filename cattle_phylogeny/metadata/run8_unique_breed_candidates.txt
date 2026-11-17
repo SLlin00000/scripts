@@ -1,0 +1,128 @@
+Angus
+Angus lowline
+Ankole
+Ankole Zebu cross
+Beefmaster
+Belgian Blue
+BelgianBlue/LimousinCross
+Belted Galloway
+Blonde d'Aquitaine
+Bohai Black Cattle
+Boran
+Boskarin
+Bos taurus turano-mongolicus
+Brahman
+Brangus
+Braunveih
+Braunvieh
+Brown Suisse
+Chaidamu Yellow Cattle
+Charolais
+Charolais-Red Angus
+Charolais x Angus
+Chi-Angus
+Chianina
+Cloned bull
+Composite
+Corriente
+Costeno con Cuernos
+CPC98
+Crossbred (25% Red Angus, 25% Simmental, 25% Gelbvieh, 25% Hereford)
+Crossbred (37.5% Gelbvieh, 25% Red Angus, 12.5% Simmental, 12.5% Limousin)
+Crossbred (50% Red Angus, 50% Limousin)
+Crossbred (50% Simmental, 25% Red Angus, 25% Angus)
+Crossbred (50% Simmental, 25% Red Angus, 25% Charolais)
+Crossbred (50% Simmental, 37.5% Red Angus, 12.5% Angus)
+Crossbred (50% Simmental, 50% Angus)
+Crossbred (50% Simmental, 50% Red Angus)
+Crossbred (50% South Devon, 25% Red Angus, 25% Gelbvieh)
+Crossbred (62.5% Angus, 12.5% Simmental, 12.5% Gelbvieh, 12.5% Hereford)
+Crossbred (62.5% Red Angus, 37.5% Gelbvieh)
+Crossbred (75% Gelbvieh, 25% Limousin)
+Dabieshan Cattle
+Devon
+Dexter
+Dianzhong Cattle
+DRS000230
+DRS001212
+DRS001213
+DRS001214
+DRS001215
+DRS001216
+DRS001217
+DRS001218
+DRS001219
+East African Shorthorn Zebu
+F1
+Fleckvieh
+Friesian-Jersey cross
+Gelbvieh
+German Angus
+Gir
+Guangfeng Cattle
+Hanwoo
+Hereford
+Hereford miniature
+Herford
+highland
+Holstein
+Holstein bull
+Holstein x Hereford
+Indian Zebu
+Jersey
+Jian Cattle
+Jiaxian Red Cattle
+Jinjiang Cattle
+Kangayam
+Kazakh Cattle
+Leiqiong Cattle
+Limia
+limonero
+Limousin
+Limousin x Hereford
+Lingnan Cattle
+Luxi Cattle
+Maine Anjou
+Maine-Anjou
+Mangshi Zebu
+Maremmana
+Maronesa
+Mongolian Cattle
+Nanyang Cattle
+N'Dama
+Nelore
+Nganda
+Nkiga
+Norwegian Red
+Nsongora
+Ntoro
+Ogaden
+Pajuna
+Piedmontese
+piggybac transposon
+Podolica
+Polish Holstein-Friesian
+Rashoki
+Red Angus
+Salers
+San Martinero
+Santa Gertrudis
+Sayaguesa
+Shorthorn
+Shorthorn Zebu
+Sichuan indigenous cattle
+Simmental
+sleeping beauty transposon
+Small East African Zebu
+Tarentaise
+Texas Longhorn
+Tharparkar
+Tibetan Cattle
+Vechur
+Wandong Cattle
+Wannan Cattle
+Weining Cattle
+Wenshan Cattle
+Xuanhan Cattle
+Yanbian Cattle
+Zaobei Cattle

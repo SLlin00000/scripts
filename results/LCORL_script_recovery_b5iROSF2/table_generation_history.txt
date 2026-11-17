@@ -1,0 +1,970 @@
+header = "isoform\ttranscript\tCDS_nt\tprotein_aa\tmissense_count\tconsequences"
+summary_text = header + "\n" + "\n".join(summary) + "\n"
+(OUT / "summary.tsv").write_text(summary_text)
+(OUT / "reference_inputs.txt").write_text(
+    f"Reference: {REF}\nAnnotation: {GFF}\nExtracted region: {region}\n"
+    "All 11 genomic REF alleles matched.\n"
+    "All CDS phase, start, terminal-stop and internal-stop checks passed.\n"
+    "Each ALT was evaluated separately; no combined haplotype was assumed.\n"
+)
+
+print("\n=== VALIDATION ===")
+print("All 11 genomic REF alleles matched.")
+print("All seven reference CDS sequences passed frame and translation checks.")
+print("\n=== ISOFORM SUMMARY ===")
+print(summary_text)
+print("=== SNP-TO-PROTEIN MATRIX ===")
+print((OUT / "variant_consequences.matrix.tsv").read_text())
+print("RESULT DIRECTORY:", OUT.resolve())
+PY
+
+python3 - <<'PY'
+from pathlib import Path
+
+folder = Path(
+    "/QRISdata/Q9774/lcorl_project/results/"
+    "LCORL_11SNP_isoform_comparison_20261025_231527"
+)
+
+seqs = {}
+name = None
+for line in (folder / "reference_proteins.fasta").read_text().splitlines():
+    if line.startswith(">"):
+        name = line[1:].split("|")[0]
+        seqs[name] = ""
+    else:
+        seqs[name] += line.strip()
+
+# Inclusive protein coordinates of the first and last SNP.
+bounds = {
+    "LCORL-202": (527, 1764),
+    "LCORL-203": (439, 1676),
+    "LCORL-204": (527, 1764),
+    "LCORL-205": (442, 1679),
+    "LCORL-206": (562, 1799),
+}
+
+reference = seqs["LCORL-206"]
+target = reference[561:1799]
+
+print("=== REGION FROM FIRST TO LAST SNP ===")
+print("isoform\tregion\tlength_aa\tidentical_to_206")
+for name, (start, end) in bounds.items():
+    segment = seqs[name][start-1:end]
+    print(f"{name}\t{start}-{end}\t{len(segment)}\t{segment == target}")
+
+print("\n=== EXACT COMMON PREFIX / SUFFIX WITH 206 ===")
+print("isoform\tlength_aa\tcommon_prefix_aa\tcommon_suffix_aa")
+for name in bounds:
+    seq = seqs[name]
+    prefix = 0
+    while (
+        prefix < min(len(seq), len(reference))
+        and seq[prefix] == reference[prefix]
+    ):
+        prefix += 1
+
+    suffix = 0
+    while (
+        suffix < min(len(seq), len(reference))
+        and seq[-1-suffix] == reference[-1-suffix]
+    ):
+        suffix += 1
+
+    print(f"{name}\t{len(seq)}\t{prefix}\t{suffix}")
+
+print("\nPrefix/suffix are exact end matches, not a full sequence alignment.")
+PY
+
+module spider alphafold 2>&1
+module spider colabfold 2>&1
+sinfo -o "%P %a %l %G"
+module spider localcolabfold/1.5.5 2>&1
+sinfo -p gpu_cuda,gpu_sxm -N -o "%N %P %t %m %G"
+ls -lh /QRISdata/Q9774/lcorl_project/results/LCORL_11SNP_isoform_comparison_20261025_231527/reference_proteins.fasta
+bash <<'BASH'
+set -euo pipefail
+
+PROJECT=/QRISdata/Q9774/lcorl_project
+SOURCE="$PROJECT/results/LCORL_11SNP_isoform_comparison_20261025_231527/reference_proteins.fasta"
+RUN_DIR=$(mktemp -d "$PROJECT/results/LCORL205_ColabFold155_XXXXXXXX")
+
+python3 - "$SOURCE" "$RUN_DIR" <<'PY'
+from pathlib import Path
+import sys
+import hashlib
+
+source = Path(sys.argv[1])
+out = Path(sys.argv[2])
+
+seqs = {}
+name = None
+for line in source.read_text().splitlines():
+    if line.startswith(">"):
+        name = line[1:].split("|")[0]
+        assert name not in seqs, f"Duplicate sequence: {name}"
+        seqs[name] = ""
+    elif line.strip():
+        assert name is not None
+        seqs[name] += line.strip()
+
+seq = seqs["LCORL-205"]
+assert len(seq) == 1784, f"Unexpected length: {len(seq)}"
+assert set(seq) <= set("ACDEFGHIKLMNPQRSTVWY")
+assert seq == seqs["LCORL-206"][120:], "205/206 relationship mismatch"
+
+expected = {
+    442: "I", 555: "E", 642: "A", 672: "N",
+    756: "L", 793: "S", 899: "E", 985: "D",
+    1363: "G", 1383: "K", 1679: "R"
+}
+for pos, residue in expected.items():
+    assert seq[pos-1] == residue, f"Residue mismatch at {pos}"
+
+(out / "LCORL205_REFERENCE.fasta").write_text(
+    ">LCORL205_REFERENCE_1784aa\n" +
+    "\n".join(seq[i:i+60] for i in range(0, len(seq), 60)) + "\n"
+)
+
+(out / "input_validation.txt").write_text(
+    f"Source: {source}\n"
+    "Transcript: ENSBTAT00000074479\n"
+    "Reference: ARS-UCD1.2 / Ensembl release 105\n"
+    "Protein length: 1784 aa\n"
+    "Exact match to LCORL-206 residues 121-1904: PASS\n"
+    "All 11 reference residues: PASS\n"
+    f"Sequence SHA256: {hashlib.sha256(seq.encode()).hexdigest()}\n"
+)
+print("Sequence checks passed: LCORL-205, 1784 aa.")
+PY
+
+cat > "$RUN_DIR/run_205.slurm" <<'SLURM'
+#!/bin/bash -l
+#SBATCH --job-name=LCORL205_CF
+#SBATCH --partition=gpu_cuda
+#SBATCH --gres=gpu:h100:1
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=256G
+#SBATCH --time=24:00:00
+#SBATCH --output=slurm-%j.out
+#SBATCH --error=slurm-%j.err
+
+set -eo pipefail
+cd "$SLURM_SUBMIT_DIR"
+
+trap 'rc=$?; printf "exit_code=%s\n" "$rc" > job_exit_status.txt' EXIT
+
+module load localcolabfold/1.5.5
+
+export OMP_NUM_THREADS="$SLURM_CPUS_PER_TASK"
+export PYTHONUNBUFFERED=1
+
+date -Is
+hostname
+module list 2>&1
+command -v colabfold_batch
+
+nvidia-smi > gpu_info.txt
+cat gpu_info.txt
+free -h
+
+colabfold_batch --help > colabfold_batch_help.txt 2>&1
+
+# Stop immediately if JAX cannot use the allocated GPU.
+python - <<'PY'
+import jax
+devices = jax.devices()
+print("JAX devices:", devices)
+if not any(d.platform == "gpu" for d in devices):
+    raise SystemExit("STOP: JAX cannot access the allocated GPU.")
+PY
+
+colabfold_batch \
+    LCORL205_REFERENCE.fasta \
+    predictions \
+    --model-type alphafold2_ptm \
+    --msa-mode mmseqs2_uniref_env \
+    --max-msa 512:1024 \
+    --num-models 5 \
+    --num-recycle 3 \
+    --num-seeds 1 \
+    --random-seed 0 \
+    2>&1 | tee prediction_console.log
+
+# Check actual output files; do not rely only on process exit status.
+python - <<'PY'
+from pathlib import Path
+
+out = Path("predictions")
+pdbs = sorted(out.glob("*unrelaxed*.pdb"))
+scores = sorted(out.glob("*scores*.json"))
+
+print("Saved model PDBs:", len(pdbs))
+print("Saved score JSONs:", len(scores))
+for p in pdbs:
+    print(p)
+
+if len(pdbs) < 5 or len(scores) < 5:
+    raise SystemExit(
+        "INCOMPLETE: fewer than five models or score files. "
+        "Keep this directory and inspect prediction_console.log."
+    )
+PY
+
+date -Is
+echo "DONE: five model PDBs and score files found."
+SLURM
+
+cd "$RUN_DIR"
+JOB_ID=$(sbatch --parsable run_205.slurm)
+printf '%s\n' "$JOB_ID" > job_id.txt
+
+printf '\nSubmitted job: %s\nResult directory: %s\n' "$JOB_ID" "$RUN_DIR"
+BASH
+
+sacctmgr -nP show assoc where user="$USER"   format=Cluster,Account,User,Partition,QOS,DefaultQOS
+sacctmgr -nP show user where name="$USER"   format=User,DefaultAccount
+scontrol show partition gpu_cuda
+env | sort | grep -E '^SBATCH_(ACCOUNT|QOS|PARTITION)='
+python3 - <<'PY'
+from pathlib import Path
+import os
+import shutil
+import subprocess
+import tempfile
+
+results = Path("/QRISdata/Q9774/lcorl_project/results")
+
+candidates = [
+    p for p in results.glob("LCORL205_ColabFold155_*")
+    if (p / "run_205.slurm").is_file()
+    and (p / "LCORL205_REFERENCE.fasta").is_file()
+    and not (p / "job_id.txt").exists()
+]
+if not candidates:
+    raise SystemExit("STOP: 没有找到尚未提交的 205 任务目录。")
+
+source = max(candidates, key=lambda p: p.stat().st_mtime)
+
+scratch = Path("/scratch/user/s4922196")
+if not scratch.is_dir():
+    raise SystemExit(f"STOP: scratch 目录不存在：{scratch}")
+
+work = Path(tempfile.mkdtemp(prefix="LCORL205_CF_", dir=scratch))
+
+for name in (
+    "run_205.slurm",
+    "LCORL205_REFERENCE.fasta",
+    "input_validation.txt",
+):
+    shutil.copy2(source / name, work / name)
+
+predictions = source / "predictions"
+predictions.mkdir(exist_ok=True)
+(work / "predictions").symlink_to(predictions, target_is_directory=True)
+
+for name in (
+    "prediction_console.log",
+    "gpu_info.txt",
+    "colabfold_batch_help.txt",
+    "job_exit_status.txt",
+):
+    (work / name).symlink_to(source / name)
+
+command = [
+    "sbatch", "--parsable",
+    "--account=a_qaafi_cas",
+    "--qos=gpu",
+    "--partition=gpu_cuda",
+    f"--chdir={work}",
+    f"--output={source}/slurm-%j.out",
+    f"--error={source}/slurm-%j.err",
+    str(work / "run_205.slurm"),
+]
+
+print("Result directory:", source, flush=True)
+print("Working directory:", work, flush=True)
+
+env = os.environ.copy()
+env["SBATCH_SUBMIT_DIR"] = str(work)
+
+submitted = subprocess.run(
+    command, cwd=work, env=env,
+    text=True, capture_output=True
+)
+if submitted.stderr:
+    print(submitted.stderr, end="")
+if submitted.returncode != 0:
+    raise SystemExit("提交未成功；文件已保留。请把上面的错误贴过来。")
+
+job_id = submitted.stdout.strip()
+(source / "job_id.txt").write_text(job_id + "\n")
+(source / "scratch_workdir.txt").write_text(str(work) + "\n")
+(source / "submission_command.txt").write_text(" ".join(command) + "\n")
+
+print("Submitted job:", job_id)
+PY
+
+squeue -u s4922196
+python3 - <<'PY'
+from pathlib import Path
+from datetime import datetime
+import csv
+import io
+
+source = Path(
+    "/QRISdata/Q9774/lcorl_project/results/"
+    "LCORL_11SNP_isoform_comparison_20261025_231527"
+)
+
+required = [
+    "summary.tsv",
+    "variant_consequences.long.tsv",
+    "reference_proteins.fasta",
+]
+for name in required:
+    if not (source / name).is_file():
+        raise SystemExit(f"STOP: missing {source / name}")
+
+with (source / "summary.tsv").open() as f:
+    summaries = list(csv.DictReader(f, delimiter="\t"))
+
+with (source / "variant_consequences.long.tsv").open() as f:
+    variants = list(csv.DictReader(f, delimiter="\t"))
+
+seqs = {}
+name = None
+for line in (source / "reference_proteins.fasta").read_text().splitlines():
+    if line.startswith(">"):
+        name = line[1:].split("|")[0]
+        seqs[name] = ""
+    elif line.strip():
+        seqs[name] += line.strip()
+
+reference = seqs["LCORL-206"]
+ref_positions = sorted(
+    int(v["protein_position"])
+    for v in variants
+    if v["isoform"] == "LCORL-206"
+    and v["consequence"] == "missense"
+)
+assert len(ref_positions) == 11
+ref_segment = reference[ref_positions[0]-1:ref_positions[-1]]
+
+rows = []
+for s in summaries:
+    isoform = s["isoform"]
+    seq = seqs[isoform]
+    assert len(seq) == int(s["protein_aa"])
+
+    entries = [v for v in variants if v["isoform"] == isoform]
+    assert len(entries) == 11, f"Expected 11 SNP entries: {isoform}"
+
+    coding = [v for v in entries if v["CDS_position"]]
+    missense = [v for v in entries if v["consequence"] == "missense"]
+    positions = sorted(int(v["protein_position"]) for v in missense)
+
+    span = "N/A"
+    identical = "N/A"
+    if len(positions) == 11:
+        start, end = positions[0], positions[-1]
+        span = f"{start}-{end}"
+        identical = (
+            "Yes"
+            if seq[start-1:end] == ref_segment
+            else "No"
+        )
+
+    rows.append({
+        "Isoform": isoform,
+        "Transcript": s["transcript"],
+        "CDS_nt_including_stop": int(s["CDS_nt"]),
+        "Protein_aa": len(seq),
+        "Target_SNPs_in_CDS": f"{len(coding)}/11",
+        "Missense_variants": f"{len(missense)}/11",
+        "First_to_last_variant_aa": span,
+        "Variant_spanning_sequence_identical_to_206": identical,
+    })
+
+assert seqs["LCORL-205"] == reference[120:]
+
+out = source / (
+    "meeting_table_" + datetime.now().strftime("%Y%m%d_%H%M%S")
+)
+out.mkdir(exist_ok=False)
+
+for filename, delimiter, encoding in [
+    ("LCORL_isoform_comparison.csv", ",", "utf-8-sig"),
+    ("LCORL_isoform_comparison.tsv", "\t", "utf-8"),
+]:
+    with (out / filename).open("w", newline="", encoding=encoding) as f:
+        writer = csv.DictWriter(
+            f, fieldnames=list(rows[0]), delimiter=delimiter
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
+notes = (
+    "Sources: summary.tsv, variant_consequences.long.tsv and "
+    "reference_proteins.fasta in the parent analysis directory.\n"
+    "Reference: ARS-UCD1.2; Ensembl release 105.\n"
+    "These are reference proteins translated from annotated CDS, "
+    "not validated tissue-derived protein sequences.\n"
+    "The earlier validation passed genomic REF matching for all 11 SNPs, "
+    "and CDS phase, start, terminal-stop and internal-stop checks "
+    "for all seven reference transcripts.\n"
+    "The first-to-last-variant interval contains 1238 amino acids "
+    "and is identical across LCORL-202 through LCORL-206.\n"
+    "LCORL-205 residues 1-1784 exactly match LCORL-206 residues 121-1904.\n"
+    "An identical sequence interval does not establish identical "
+    "3D structure or prediction confidence.\n"
+    "No AlphaFold results are included in this table.\n"
+)
+(out / "table_notes.txt").write_text(notes)
+
+display_columns = [
+    "Isoform", "Protein_aa", "Target_SNPs_in_CDS",
+    "Missense_variants", "First_to_last_variant_aa",
+    "Variant_spanning_sequence_identical_to_206"
+]
+print("\n" + "\t".join(display_columns))
+for row in rows:
+    print("\t".join(str(row[c]) for c in display_columns))
+
+print("\nSaved files:")
+for p in sorted(out.iterdir()):
+    print(p)
+PY
+
+module load samtools
+python3 - <<'PY'
+from pathlib import Path
+from datetime import datetime
+import csv
+import re
+import shutil
+import subprocess
+
+project = Path("/QRISdata/Q9774/lcorl_project")
+gff = project / "LCORL_full_bam_analysis/annotation/Bos_taurus.ARS-UCD1.2.105.chr.gff3"
+roots = [
+    project / "results/isoseq_LCORL_screen_idt6tWEx",
+    project / "results/isoseq_LCORL_ovary_oSWsd3eo",
+]
+samples = [
+    "Blood", "Felung_run1", "Felung_run2", "Fetal_liver",
+    "Kidney", "Liver", "Muscle", "Ovary",
+    "Spleen", "Thyroid", "Uterus"
+]
+region = "6:37380296-37557106"
+gene_start, gene_end = 37380296, 37557106
+gene_id = "gene:ENSBTAG00000046561"
+
+if not shutil.which("samtools"):
+    raise SystemExit("STOP: samtools unavailable.")
+if not gff.is_file():
+    raise SystemExit(f"STOP: missing annotation: {gff}")
+
+def attrs(s):
+    return dict(x.split("=", 1) for x in s.split(";") if "=" in x)
+
+# First pass: identify transcript records belonging to LCORL.
+tx = {}
+with gff.open() as f:
+    for line in f:
+        if line.startswith("#"):
+            continue
+        fields = line.rstrip().split("\t")
+        if len(fields) != 9 or fields[2] != "mRNA":
+            continue
+        a = attrs(fields[8])
+        if gene_id in a.get("Parent", "").split(","):
+            tx[a["ID"]] = {
+                "name": a["Name"], "cds": [], "exons": []
+            }
+
+assert len(tx) == 7, f"Expected 7 LCORL transcripts, found {len(tx)}"
+
+# Second pass: collect the corresponding CDS and exon coordinates.
+with gff.open() as f:
+    for line in f:
+        if line.startswith("#"):
+            continue
+        fields = line.rstrip().split("\t")
+        if len(fields) != 9 or fields[2] not in ("CDS", "exon"):
+            continue
+        for parent in attrs(fields[8]).get("Parent", "").split(","):
+            if parent in tx:
+                assert fields[0] == "6" and fields[6] == "-"
+                key = "cds" if fields[2] == "CDS" else "exons"
+                tx[parent][key].append((int(fields[3]), int(fields[4])))
+
+transcripts = sorted(tx.values(), key=lambda t: t["name"])
+assert all(t["cds"] for t in transcripts)
+bams = sorted({p for root in roots if root.exists()
+               for p in root.rglob("*.bam")})
+
+def find_bam(sample):
+    pattern = re.compile(r"^" + re.escape(sample) + r"(?:[._-]|$)")
+    matches = [
+        p for p in bams
+        if any(pattern.match(part) for part in p.parts)
+    ]
+    if not matches:
+        return None
+    def priority(p):
+        n = p.name.lower()
+        if "genome" in n:
+            return 0
+        if "primary" in n:
+            return 1
+        if "candidate" in n:
+            return 2
+        return 3
+    best = min(priority(p) for p in matches)
+    choices = [p for p in matches if priority(p) == best]
+    if len(choices) != 1:
+        raise RuntimeError(
+            f"Ambiguous BAM for {sample}:\n" +
+            "\n".join(map(str, choices))
+        )
+    return choices[0]
+
+def overlap(blocks, intervals):
+    return sum(
+        max(0, min(b, d) - max(a, c) + 1)
+        for a, b in blocks for c, d in intervals
+    )
+
+summary, details, sources = [], [], []
+
+for sample in samples:
+    bam = find_bam(sample)
+    row = {"Sample": sample, "LCORL_primary_reads": "MISSING"}
+    for t in transcripts:
+        row[t["name"]] = "MISSING"
+    if bam is None:
+        summary.append(row)
+        sources.append({"Sample": sample, "BAM": "MISSING"})
+        continue
+
+    sources.append({"Sample": sample, "BAM": str(bam)})
+    command = ["samtools", "view", "-F", "2308", str(bam)]
+    # 2308 = unmapped + secondary + supplementary.
+    indexed = (
+        Path(str(bam) + ".bai").exists()
+        or bam.with_suffix(".bai").exists()
+        or Path(str(bam) + ".csi").exists()
+    )
+    if indexed:
+        command.append(region)
+
+    result = subprocess.run(command, text=True, capture_output=True)
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+
+    reads = {}
+    for line in result.stdout.splitlines():
+        f = line.split("\t")
+        if f[2] != "6":
+            continue
+        pos = int(f[3])
+        start = pos
+        blocks = []
+        junctions = 0
+        for length, op in re.findall(r"(\d+)([MIDNSHP=X])", f[5]):
+            length = int(length)
+            if op in ("M", "=", "X"):
+                blocks.append((pos, pos + length - 1))
+                pos += length
+            elif op in ("D", "N"):
+                pos += length
+                junctions += (op == "N")
+        if start > gene_end or pos - 1 < gene_start:
+            continue
+        if f[0] in reads:
+            raise RuntimeError(f"Duplicate primary read: {sample}, {f[0]}")
+        reads[f[0]] = (blocks, int(f[4]), junctions)
+
+    row["LCORL_primary_reads"] = len(reads)
+    for t in transcripts:
+        cds_len = sum(b-a+1 for a, b in t["cds"])
+        covering = 0
+        maximum = 0.0
+        for read_id, (blocks, mapq, junctions) in reads.items():
+            covered = overlap(blocks, t["cds"])
+            exon_covered = overlap(blocks, t["exons"])
+            percent = 100 * covered / cds_len
+            covering += (covered > 0)
+            maximum = max(maximum, percent)
+            details.append({
+                "Sample": sample,
+                "Read_ID": read_id,
+                "Transcript": t["name"],
+                "MAPQ": mapq,
+                "Splice_N_count": junctions,
+                "Exon_overlap_nt": exon_covered,
+                "CDS_overlap_nt": covered,
+                "Reference_CDS_nt": cds_len,
+                "CDS_coverage_percent": round(percent, 2),
+            })
+        row[t["name"]] = f"{covering}; {maximum:.1f}%"
+    summary.append(row)
+
+out = project / "results" / (
+    "LCORL_tissue_transcript_table_" +
+    datetime.now().strftime("%Y%m%d_%H%M%S")
+)
+out.mkdir(exist_ok=False)
+
+def save(name, records):
+    if not records:
+        return
+    with (out / name).open("w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=list(records[0]))
+        writer.writeheader()
+        writer.writerows(records)
+
+save("tissue_transcript_summary.csv", summary)
+save("read_transcript_details.csv", details)
+save("input_BAM_files.csv", sources)
+
+(out / "README.txt").write_text(
+    f"Annotation: {gff}\nRegion: {region}\n"
+    "Each transcript cell: number of reads overlapping its CDS; "
+    "maximum CDS coverage achieved by ONE read.\n"
+    "Primary mapped records only; no additional MAPQ threshold.\n"
+    "Coverage counts reference positions aligned via CIGAR M, = or X; "
+    "D and N are excluded. M can include mismatches.\n"
+    "CDS coverage is not nucleotide identity or isoform-assignment confidence.\n"
+    "Reads may overlap multiple transcript models; columns are not additive.\n"
+    "MISSING indicates unavailable input, not zero reads.\n"
+    "This table does not establish splice-chain identity or full-length isoforms.\n"
+)
+
+print("\nCell = CDS-overlapping reads; maximum single-read CDS coverage\n")
+print("\t".join(summary[0]))
+for row in summary:
+    print("\t".join(map(str, row.values())))
+print("\nOUTPUT DIRECTORY:", out)
+print("Files: tissue_transcript_summary.csv")
+print("       read_transcript_details.csv")
+print("       input_BAM_files.csv")
+print("       README.txt")
+PY
+
+module load samtools/1.22.1-gcc-14.2.0
+module load samtools
+python3 - <<'PY'
+from pathlib import Path
+from datetime import datetime
+import csv
+import re
+import shutil
+import subprocess
+
+project = Path("/QRISdata/Q9774/lcorl_project")
+gff = project / "LCORL_full_bam_analysis/annotation/Bos_taurus.ARS-UCD1.2.105.chr.gff3"
+roots = [
+    project / "results/isoseq_LCORL_screen_idt6tWEx",
+    project / "results/isoseq_LCORL_ovary_oSWsd3eo",
+]
+samples = [
+    "Blood", "Felung_run1", "Felung_run2", "Fetal_liver",
+    "Kidney", "Liver", "Muscle", "Ovary",
+    "Spleen", "Thyroid", "Uterus"
+]
+region = "6:37380296-37557106"
+gene_start, gene_end = 37380296, 37557106
+gene_id = "gene:ENSBTAG00000046561"
+
+if not shutil.which("samtools"):
+    raise SystemExit("STOP: samtools unavailable.")
+if not gff.is_file():
+    raise SystemExit(f"STOP: missing annotation: {gff}")
+
+def attrs(s):
+    return dict(x.split("=", 1) for x in s.split(";") if "=" in x)
+
+# First pass: identify transcript records belonging to LCORL.
+tx = {}
+with gff.open() as f:
+    for line in f:
+        if line.startswith("#"):
+            continue
+        fields = line.rstrip().split("\t")
+        if len(fields) != 9 or fields[2] != "mRNA":
+            continue
+        a = attrs(fields[8])
+        if gene_id in a.get("Parent", "").split(","):
+            tx[a["ID"]] = {
+                "name": a["Name"], "cds": [], "exons": []
+            }
+
+assert len(tx) == 7, f"Expected 7 LCORL transcripts, found {len(tx)}"
+
+# Second pass: collect the corresponding CDS and exon coordinates.
+with gff.open() as f:
+    for line in f:
+        if line.startswith("#"):
+            continue
+        fields = line.rstrip().split("\t")
+        if len(fields) != 9 or fields[2] not in ("CDS", "exon"):
+            continue
+        for parent in attrs(fields[8]).get("Parent", "").split(","):
+            if parent in tx:
+                assert fields[0] == "6" and fields[6] == "-"
+                key = "cds" if fields[2] == "CDS" else "exons"
+                tx[parent][key].append((int(fields[3]), int(fields[4])))
+
+transcripts = sorted(tx.values(), key=lambda t: t["name"])
+assert all(t["cds"] for t in transcripts)
+bams = sorted({p for root in roots if root.exists()
+               for p in root.rglob("*.bam")})
+
+def find_bam(sample):
+    pattern = re.compile(r"^" + re.escape(sample) + r"(?:[._-]|$)")
+    matches = [
+        p for p in bams
+        if any(pattern.match(part) for part in p.parts)
+    ]
+    if not matches:
+        return None
+    def priority(p):
+        n = p.name.lower()
+        if "genome" in n:
+            return 0
+        if "primary" in n:
+            return 1
+        if "candidate" in n:
+            return 2
+        return 3
+    best = min(priority(p) for p in matches)
+    choices = [p for p in matches if priority(p) == best]
+    if len(choices) != 1:
+        raise RuntimeError(
+            f"Ambiguous BAM for {sample}:\n" +
+            "\n".join(map(str, choices))
+        )
+    return choices[0]
+
+def overlap(blocks, intervals):
+    return sum(
+        max(0, min(b, d) - max(a, c) + 1)
+        for a, b in blocks for c, d in intervals
+    )
+
+summary, details, sources = [], [], []
+
+for sample in samples:
+    bam = find_bam(sample)
+    row = {"Sample": sample, "LCORL_primary_reads": "MISSING"}
+    for t in transcripts:
+        row[t["name"]] = "MISSING"
+    if bam is None:
+        summary.append(row)
+        sources.append({"Sample": sample, "BAM": "MISSING"})
+        continue
+
+    sources.append({"Sample": sample, "BAM": str(bam)})
+    command = ["samtools", "view", "-F", "2308", str(bam)]
+    # 2308 = unmapped + secondary + supplementary.
+    indexed = (
+        Path(str(bam) + ".bai").exists()
+        or bam.with_suffix(".bai").exists()
+        or Path(str(bam) + ".csi").exists()
+    )
+    if indexed:
+        command.append(region)
+
+    result = subprocess.run(command, text=True, capture_output=True)
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+
+    reads = {}
+    for line in result.stdout.splitlines():
+        f = line.split("\t")
+        if f[2] != "6":
+            continue
+        pos = int(f[3])
+        start = pos
+        blocks = []
+        junctions = 0
+        for length, op in re.findall(r"(\d+)([MIDNSHP=X])", f[5]):
+            length = int(length)
+            if op in ("M", "=", "X"):
+                blocks.append((pos, pos + length - 1))
+                pos += length
+            elif op in ("D", "N"):
+                pos += length
+                junctions += (op == "N")
+        if start > gene_end or pos - 1 < gene_start:
+            continue
+        if f[0] in reads:
+            raise RuntimeError(f"Duplicate primary read: {sample}, {f[0]}")
+        reads[f[0]] = (blocks, int(f[4]), junctions)
+
+    row["LCORL_primary_reads"] = len(reads)
+    for t in transcripts:
+        cds_len = sum(b-a+1 for a, b in t["cds"])
+        covering = 0
+        maximum = 0.0
+        for read_id, (blocks, mapq, junctions) in reads.items():
+            covered = overlap(blocks, t["cds"])
+            exon_covered = overlap(blocks, t["exons"])
+            percent = 100 * covered / cds_len
+            covering += (covered > 0)
+            maximum = max(maximum, percent)
+            details.append({
+                "Sample": sample,
+                "Read_ID": read_id,
+                "Transcript": t["name"],
+                "MAPQ": mapq,
+                "Splice_N_count": junctions,
+                "Exon_overlap_nt": exon_covered,
+                "CDS_overlap_nt": covered,
+                "Reference_CDS_nt": cds_len,
+                "CDS_coverage_percent": round(percent, 2),
+            })
+        row[t["name"]] = f"{covering}; {maximum:.1f}%"
+    summary.append(row)
+
+out = project / "results" / (
+    "LCORL_tissue_transcript_table_" +
+    datetime.now().strftime("%Y%m%d_%H%M%S")
+)
+out.mkdir(exist_ok=False)
+
+def save(name, records):
+    if not records:
+        return
+    with (out / name).open("w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=list(records[0]))
+        writer.writeheader()
+        writer.writerows(records)
+
+save("tissue_transcript_summary.csv", summary)
+save("read_transcript_details.csv", details)
+save("input_BAM_files.csv", sources)
+
+(out / "README.txt").write_text(
+    f"Annotation: {gff}\nRegion: {region}\n"
+    "Each transcript cell: number of reads overlapping its CDS; "
+    "maximum CDS coverage achieved by ONE read.\n"
+    "Primary mapped records only; no additional MAPQ threshold.\n"
+    "Coverage counts reference positions aligned via CIGAR M, = or X; "
+    "D and N are excluded. M can include mismatches.\n"
+    "CDS coverage is not nucleotide identity or isoform-assignment confidence.\n"
+    "Reads may overlap multiple transcript models; columns are not additive.\n"
+    "MISSING indicates unavailable input, not zero reads.\n"
+    "This table does not establish splice-chain identity or full-length isoforms.\n"
+)
+
+print("\nCell = CDS-overlapping reads; maximum single-read CDS coverage\n")
+print("\t".join(summary[0]))
+for row in summary:
+    print("\t".join(map(str, row.values())))
+print("\nOUTPUT DIRECTORY:", out)
+print("Files: tissue_transcript_summary.csv")
+print("       read_transcript_details.csv")
+print("       input_BAM_files.csv")
+print("       README.txt")
+PY
+
+python3 - <<'PY'
+from pathlib import Path
+import csv
+
+folder = Path(
+    "/QRISdata/Q9774/lcorl_project/results/"
+    "LCORL_tissue_transcript_table_20261026_085233"
+)
+
+with (folder / "read_transcript_details.csv").open(
+    encoding="utf-8-sig", newline=""
+) as f:
+    records = list(csv.DictReader(f))
+
+
+grouped = {}
+for r in records:
+    key = (r["Sample"], r["Read_ID"])
+    grouped.setdefault(key, {})
+    if r["Transcript"] in grouped[key]:
+        raise SystemExit(f"Duplicate record: {key}, {r['Transcript']}")
+    grouped[key][r["Transcript"]] = r
+
+transcripts = [f"LCORL-{i}" for i in range(201, 208)]
+all_rows = []
+
+for (sample, read_id), entries in sorted(grouped.items()):
+    if set(entries) != set(transcripts):
+        raise SystemExit(f"Incomplete transcript comparison: {read_id}")
+
+    first = entries[transcripts[0]]
+    has_cds = any(int(r["CDS_overlap_nt"]) > 0 for r in entries.values())
+
+    row = {
+        "Sample": sample,
+        "Read_ID": read_id,
+        "ZMW_ID": read_id.split("/")[-2],
+        "MAPQ": first["MAPQ"],
+        "Splice_N_count": first["Splice_N_count"],
+        "Status": (
+            "Reference_CDS_overlap"
+            if has_cds else "No_reference_CDS_overlap"
+        ),
+    }
+    for transcript in transcripts:
+        value = float(entries[transcript]["CDS_coverage_percent"])
+        row[f"{transcript}_CDS_coverage"] = f"{value:.1f}%"
+
+    all_rows.append(row)
+
+if not all_rows:
+    raise SystemExit("STOP: no read records found.")
+
+selected = [
+    r for r in all_rows
+    if r["Status"] == "Reference_CDS_overlap"
+]
+
+def save(filename, rows):
+    with (folder / filename).open(
+        "w", newline="", encoding="utf-8-sig"
+    ) as f:
+        writer = csv.DictWriter(f, fieldnames=list(all_rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+save("LCORL_all_candidate_read_IDs.csv", all_rows)
+save("LCORL_CDS_overlapping_read_IDs.csv", selected)
+
+print("\n=== READS OVERLAPPING REFERENCE CDS ===")
+print("\t".join(all_rows[0]))
+for row in selected:
+    print("\t".join(str(v) for v in row.values()))
+
+print(f"\nAll regional candidate reads: {len(all_rows)}")
+print(f"Reads overlapping reference CDS: {len(selected)}")
+print("\nSaved:")
+print(folder / "LCORL_all_candidate_read_IDs.csv")
+print(folder / "LCORL_CDS_overlapping_read_IDs.csv")
+PY
+
+squeue -u s4922196
+squeue -j 30607479
+scontrol update JobId=30607479   Gres=gpu:1   MinMemoryNode=128G   TimeLimit=04:00:00
+scontrol update JobId=30607479   Gres=gpu:1   MinMemoryNode=65536   TimeLimit=04:00:00
+scontrol show job 30607479 | grep -E 'JobState=|TimeLimit=|MinMemory|TresPerNode=|ReqTRES='
+squeue -u s4922196
+#SBATCH --cpus-per-task=8
+export OMP_NUM_THREADS="$SLURM_CPUS_PER_TASK"
+module load localcolabfold/1.5.5
+colabfold_batch --help
+colabfold_search --help
+module load localcolabfold/1.5.5
+command -v colabfold_batch
+python -c 'from importlib.metadata import version; print("Installed ColabFold:", version("colabfold"))'

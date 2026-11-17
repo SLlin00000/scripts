@@ -1,0 +1,2 @@
+7fb843fea566146cea064959e086fd1b35f824ab76f7233e013cc0c2805baaab  resources/reference_liftover/ARS-UCD1.2_chr6.fa.gz
+828f7681eb04d16a6fb938b5792dcdf949f0dbdd90cb7915776ee6323ceacf85  resources/reference_liftover/ARS-UCD2.0_chr6.fa.gz

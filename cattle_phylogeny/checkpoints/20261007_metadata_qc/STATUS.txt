@@ -1,0 +1,47 @@
+LCORL bos family phylogeny metadata checkpoint
+Date: 2026-10-07
+
+Run8 panel:
+- 1842 total samples
+
+Unified breed extraction:
+- 1147 explicit breed field
+- 8 isolate-derived
+- 249 description-derived single breed
+- 8 description-derived crossbred
+- 430 unresolved
+- 125 current unique breed candidates
+
+Current final sample classification:
+- KEEP: 1093
+- REVIEW: 310
+- REVIEW_CONFLICT: 5
+- EXCLUDE_DICTIONARY: 4
+- EXCLUDE_POOR_METADATA: 430
+
+Ancestry QC:
+- CONSISTENT: 1055
+- COMPATIBLE_ADMIXTURE: 47
+- TRUE_CONFLICT: 5
+- NOT_ASSESSABLE: 735
+
+TRUE_CONFLICT:
+- 5 samples
+- all currently Bos taurus taxonomic label + Brahman breed
+- do not delete automatically; manual review required
+
+Current task:
+- Resolve 59 unique breed labels represented by 310 REVIEW samples.
+- Complete breed_dictionary_master.tsv ancestry / production_type / status fields.
+- Then rerun build_final_sample_classification.py.
+- After metadata QC is complete:
+  1. generate final well-labelled sample list
+  2. exclude overlap with existing project animals
+  3. variant QC
+  4. phylogenetic tree
+
+Do NOT redo:
+- ENA metadata download
+- 1842 sample extraction
+- description rescue
+- breed count generation

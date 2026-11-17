@@ -1,0 +1,3 @@
+Region: 6:37377806-37556970
+LCORL-overlapping primary alignments: 0
+Candidate FASTA records: 0

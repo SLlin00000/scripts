@@ -1,0 +1,8 @@
+Sources: summary.tsv, variant_consequences.long.tsv and reference_proteins.fasta in the parent analysis directory.
+Reference: ARS-UCD1.2; Ensembl release 105.
+These are reference proteins translated from annotated CDS, not validated tissue-derived protein sequences.
+The earlier validation passed genomic REF matching for all 11 SNPs, and CDS phase, start, terminal-stop and internal-stop checks for all seven reference transcripts.
+The first-to-last-variant interval contains 1238 amino acids and is identical across LCORL-202 through LCORL-206.
+LCORL-205 residues 1-1784 exactly match LCORL-206 residues 121-1904.
+An identical sequence interval does not establish identical 3D structure or prediction confidence.
+No AlphaFold results are included in this table.

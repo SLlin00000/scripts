@@ -1,0 +1,10 @@
+/QRISdata/Q9774/lcorl_project/isoseq/Blood_minpass3_nopolish_ccs_lima.5p--3p.flnc.fastq
+/QRISdata/Q9774/lcorl_project/isoseq/Felung_run1_minpass3_nopolish_ccs_lima.5p--3p.flnc.fastq
+/QRISdata/Q9774/lcorl_project/isoseq/Felung_run2_minpass3_nopolish_ccs_lima.5p--3p.flnc.fastq
+/QRISdata/Q9774/lcorl_project/isoseq/Fetal_liver_minpass3_nopolish_ccs_lima.5p--3p.flnc.fastq
+/QRISdata/Q9774/lcorl_project/isoseq/Kidney_minpass3_nopolish_ccs_lima.5p--3p.flnc.fastq
+/QRISdata/Q9774/lcorl_project/isoseq/Liver_minpass3_nopolish_ccs_lima.5p--3p.flnc.fastq
+/QRISdata/Q9774/lcorl_project/isoseq/Muscle_minpass3_nopolish_ccs_lima.5p--3p.flnc.fastq
+/QRISdata/Q9774/lcorl_project/isoseq/Spleen_minpass3_nopolish_ccs_lima.5p--3p.flnc.fastq
+/QRISdata/Q9774/lcorl_project/isoseq/Thyroid_minpass3_nopolish_ccs_lima.5p--3p.flnc.fastq
+/QRISdata/Q9774/lcorl_project/isoseq/Uterus_minpass3_nopolish_ccs_lima.5p--3p.flnc.fastq
